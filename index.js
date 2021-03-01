@@ -1,11 +1,9 @@
 const fs = require('fs');
-const fetch = require("node-fetch");
 const { webkit, devices } = require("playwright-webkit");
 const iPhone11 = devices["iPhone 11 Pro"];
 const cookies = fs.readFileSync('./config/cookies.json', 'utf8')
-const proxy1 = {
-			server: 'http://104.128.28.196:65432'
-		}
+
+const proxy = 'http://104.128.28.196:65432';
 
 class Signer {
   userAgent =
@@ -40,8 +38,14 @@ class Signer {
       args: [],
       ignoreDefaultArgs: ["--mute-audio", "--hide-scrollbars"],
       headless: true,
-      ignoreHTTPSErrors: true //,
-//      proxy: proxy1
+      ignoreHTTPSErrors: true,
+      env: {
+        ...process.env,
+        http_proxy: proxy,
+        https_proxy: proxy,
+        ftp_proxy: proxy,
+        all_proxy: proxy
+      }
     };
   }
 
@@ -66,11 +70,7 @@ class Signer {
     await this.context.addCookies(deserializedCookies)
 
     this.page = await this.context.newPage();
-    
-    const response = await fetch('https://api.myip.com');
-    const myIp = await response.json();
 
-    console.log(myIp)
     await this.page.goto("https://www.tiktok.com/@lebronjames_vlog?lang=en", {
       waitUntil: "load",
     });
