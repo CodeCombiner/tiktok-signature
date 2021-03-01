@@ -1,5 +1,11 @@
+const fs = require('fs');
+const fetch = require("node-fetch");
 const { webkit, devices } = require("playwright-webkit");
 const iPhone11 = devices["iPhone 11 Pro"];
+const cookies = fs.readFileSync('./config/cookies.json', 'utf8')
+const proxy1 = {
+			server: 'http://104.128.28.196:65432'
+		}
 
 class Signer {
   userAgent =
@@ -11,6 +17,7 @@ class Signer {
     "--window-position=0,0",
     "--ignore-certifcate-errors",
     "--ignore-certifcate-errors-spki-list",
+    "--proxy=http://104.128.28.196:65432"
   ];
 
   constructor(userAgent, tac, browser) {
@@ -28,12 +35,13 @@ class Signer {
     }
 
     this.args.push(`--user-agent="${this.userAgent}"`);
-
+    
     this.options = {
       args: [],
       ignoreDefaultArgs: ["--mute-audio", "--hide-scrollbars"],
       headless: true,
-      ignoreHTTPSErrors: true,
+      ignoreHTTPSErrors: true //,
+//      proxy: proxy1
     };
   }
 
@@ -54,8 +62,16 @@ class Signer {
       userAgent: this.userAgent,
     });
 
+    const deserializedCookies = JSON.parse(cookies)
+    await this.context.addCookies(deserializedCookies)
+
     this.page = await this.context.newPage();
-    await this.page.goto("https://www.tiktok.com/@rihanna?lang=en", {
+    
+    const response = await fetch('https://api.myip.com');
+    const myIp = await response.json();
+
+    console.log(myIp)
+    await this.page.goto("https://www.tiktok.com/@lebronjames_vlog?lang=en", {
       waitUntil: "load",
     });
     // Uncomment the following line for unwanted audio
